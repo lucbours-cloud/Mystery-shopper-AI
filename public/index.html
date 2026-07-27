@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Mystery Shopper — Luc Bours</title>
+  <meta name="description" content="Een AI-agent die als klant je website doorloopt en rapporteert waar mensen vastlopen." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark">●</span>
+        <div>
+          <div class="brand-name">AI Mystery Shopper</div>
+          <div class="brand-sub">onderdeel van Customer Journey Intelligence — door Luc Bours</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell" id="app">
+
+      <!-- INPUT -->
+      <section class="panel" id="screen-input">
+        <h1>Laat een AI-klant jouw website testen</h1>
+        <p class="lead">
+          Kies een klanttype, geef een doel mee, en de AI doorloopt jouw site zelf —
+          stap voor stap, met screenshots — en rapporteert precies waar echte klanten
+          zouden twijfelen of afhaken.
+        </p>
+
+        <form id="form">
+          <label class="field-label" for="url">Welke pagina wil je testen?</label>
+          <input type="url" id="url" name="url" placeholder="https://jouwbedrijf.nl/aanmelden" required />
+
+          <label class="field-label">Kies een klant-persona</label>
+          <div class="persona-grid" id="persona-grid">
+            <!-- persona cards worden hier via JS ingevuld -->
+          </div>
+
+          <label class="field-label" for="goal">Wat probeert deze klant te doen?</label>
+          <textarea id="goal" name="goal" rows="2" maxlength="300" placeholder="bijv. zich aanmelden voor een gratis proefperiode" required></textarea>
+
+          <label class="field-label" for="maxSteps">Maximaal aantal stappen: <span id="steps-value">5</span></label>
+          <input type="range" id="maxSteps" name="maxSteps" min="3" max="8" value="5" />
+
+          <label class="consent">
+            <input type="checkbox" id="consent" name="consent" required />
+            <span>Ik heb toestemming om deze website automatisch te laten testen door een AI-agent.</span>
+          </label>
+
+          <button type="submit" class="btn btn-primary btn-large" id="btn-submit">Start de Mystery Shopper →</button>
+          <p class="fineprint">
+            De agent rondt nooit een echte bestelling, betaling of accountaanmaak af — hij stopt
+            vlak voor een definitieve bevestigingsknop en registreert dat als conversiemoment.
+          </p>
+        </form>
+      </section>
+
+      <!-- LOADING -->
+      <section class="panel" id="screen-loading" hidden>
+        <div class="loading-inner">
+          <div class="spinner" aria-hidden="true"></div>
+          <h2>De AI-klant doorloopt nu jullie website...</h2>
+          <p class="lead" id="loading-detail">Dit duurt meestal 30-90 seconden.</p>
+        </div>
+      </section>
+
+      <!-- ERROR -->
+      <section class="panel" id="screen-error" hidden>
+        <h2>Er ging iets mis</h2>
+        <p class="lead" id="error-message"></p>
+        <button class="btn btn-primary" id="btn-retry">Opnieuw proberen</button>
+      </section>
+
+      <!-- RESULTS -->
+      <section class="panel panel-wide" id="screen-results" hidden>
+        <div class="verdict-card" id="verdict-card">
+          <!-- ingevuld via JS -->
+        </div>
+
+        <h2 class="timeline-title">Stap voor stap</h2>
+        <p class="legend">
+          <span class="legend-swatch legend-friction"></span> gemarkeerd element = frictiepunt
+          &nbsp;&nbsp;
+          <span class="legend-swatch legend-normal"></span> gemarkeerd element = normale actie
+        </p>
+        <div class="timeline" id="timeline"></div>
+
+        <h2 class="reco-title">Aanbevelingen</h2>
+        <div class="recommendations" id="recommendations"></div>
+
+        <div class="report-footer">
+          <button class="btn btn-ghost" id="btn-restart">↺ Nieuwe test starten</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>Gebouwd door Luc Bours als onderdeel van zijn AI-portfolio.</p>
+    </footer>
+  </div>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <img id="lightbox-img" src="" alt="Screenshot" />
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

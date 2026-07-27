@@ -1,0 +1,17 @@
+{
+  "name": "ai-mystery-shopper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Mystery Shopper — een autonome AI-klant die jouw website doorloopt en rapporteert waar echte klanten zouden vastlopen. Onderdeel van Customer Journey Intelligence. Gebouwd door Luc Bours.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "playwright": "^1.48.0"
+  }
+}
