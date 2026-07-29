@@ -7,76 +7,131 @@
   <meta name="description" content="Een AI-agent die als klant je website doorloopt en rapporteert waar mensen vastlopen." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="bg-blobs" aria-hidden="true">
-    <div class="blob blob-a"></div>
-    <div class="blob blob-b"></div>
-    <div class="blob blob-c"></div>
-    <div class="noise-overlay"></div>
-  </div>
-
   <div class="page">
-    <header class="site-header">
-      <div class="brand">
-        <span class="brand-mark">◆</span>
-        <div>
-          <div class="brand-name">AI Mystery Shopper</div>
-          <div class="brand-sub">onderdeel van Customer Journey Intelligence — door Luc Bours</div>
-        </div>
+    <header class="nav-bar">
+      <div class="nav-brand">
+        <span class="nav-mark">◆</span>
+        <span class="nav-name">AI Mystery Shopper</span>
       </div>
+      <div class="nav-pill">Customer Journey Intelligence — door Luc Bours</div>
     </header>
 
-    <main class="shell" id="app">
+    <main id="app">
 
-      <!-- INPUT -->
-      <section class="panel" id="screen-input">
-        <span class="eyebrow">AI-agents die als échte klanten testen</span>
-        <h1>Laat AI-klanten <span class="grad-text">jouw website testen</span></h1>
-        <p class="lead">
-          Kies één of meerdere klanttypes, geef een doel mee, en elke AI-persona doorloopt jouw
-          site zelfstandig — stap voor stap, met screenshots — en rapporteert precies waar echte
-          klanten zouden twijfelen of afhaken. Test meerdere persona's tegelijk voor een
-          vergelijkend beeld.
-        </p>
-
-        <form id="form">
-          <label class="field-label" for="url">Welke pagina wil je testen?</label>
-          <input type="url" id="url" name="url" placeholder="https://jouwbedrijf.nl/aanmelden" required />
-
-          <label class="field-label">
-            Kies klant-persona's <span class="field-label-hint">(1 tot <span id="max-personas">4</span>, kies er meerdere voor een vergelijking)</span>
-          </label>
-          <div class="persona-grid" id="persona-grid">
-            <!-- persona cards worden hier via JS ingevuld -->
+      <!-- INPUT (horizontal split hero) -->
+      <section class="hero" id="screen-input">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">AI-agents die als échte klanten testen</span>
+            <h1>Laat AI-klanten <em>jouw website</em> testen</h1>
+            <p class="lead">
+              Kies één of meerdere klanttypes, geef een doel mee, en elke AI-persona doorloopt
+              jouw site zelfstandig — stap voor stap, met screenshots en bewijs — en rapporteert
+              precies waar echte klanten twijfelen of afhaken.
+            </p>
+            <div class="hero-facts">
+              <div class="hero-fact"><span class="hero-fact-num">4</span><span>persona's tegelijk vergelijken</span></div>
+              <div class="hero-fact"><span class="hero-fact-num">100%</span><span>screenshots als bewijs</span></div>
+              <div class="hero-fact"><span class="hero-fact-num">0</span><span>echte aankopen of accounts</span></div>
+            </div>
+            <svg class="hero-squiggle" width="220" height="60" viewBox="0 0 220 60" fill="none" aria-hidden="true">
+              <path d="M2 40C40 10 70 55 105 30C140 5 165 50 218 20" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
           </div>
 
-          <label class="field-label" for="goal">Wat proberen deze klanten te doen?</label>
-          <textarea id="goal" name="goal" rows="2" maxlength="300" placeholder="bijv. zich aanmelden voor een gratis proefperiode" required></textarea>
+          <div class="hero-form-wrap">
+            <div class="hero-visual">
+              <div class="mock-browser">
+                <div class="mock-browser-bar">
+                  <span class="mock-dot mock-dot-1"></span><span class="mock-dot mock-dot-2"></span><span class="mock-dot mock-dot-3"></span>
+                </div>
+                <div class="mock-browser-body">
+                  <div class="mock-score-row">
+                    <div class="mock-score-ring">
+                      <svg viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#ece6f7" stroke-width="8" />
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#6d4fe0" stroke-width="8" stroke-linecap="round"
+                          stroke-dasharray="213.5" stroke-dashoffset="48" transform="rotate(-90 40 40)" />
+                      </svg>
+                      <div class="mock-score-value">78</div>
+                    </div>
+                    <div class="mock-persona-row">
+                      <span class="mock-avatar" style="background:#ffb199;"></span>
+                      <span class="mock-avatar" style="background:#a6c8ff;"></span>
+                      <span class="mock-avatar" style="background:#c9f2c7;"></span>
+                    </div>
+                  </div>
+                  <div class="mock-journey-line">
+                    <svg viewBox="0 0 220 50" preserveAspectRatio="none">
+                      <path d="M4 38 L44 14 L84 30 L124 8 L164 24 L216 12" fill="none" stroke="#6d4fe0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="124" cy="8" r="5" fill="#ff8a65" />
+                    </svg>
+                  </div>
+                  <div class="mock-bar-row">
+                    <div class="mock-bar" style="width: 82%;"></div>
+                    <div class="mock-bar" style="width: 54%;"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-visual-badge">Live AI-analyse</div>
+            </div>
 
-          <label class="field-label" for="maxSteps">Hoeveel acties mag elke AI-klant maximaal proberen? <span id="steps-value">5</span></label>
-          <input type="range" id="maxSteps" name="maxSteps" min="3" max="8" value="5" />
-          <p class="field-hint">
-            Eén actie = één klik, veldinvulling of keuze. Meer acties laten de AI verder in het
-            proces komen (bijv. tot aan de betaalstap), maar elke persona-test duurt dan ook iets langer.
-          </p>
+            <form id="form" class="hero-form">
+              <label class="field-label" for="url">Welke pagina wil je testen?</label>
+              <input type="url" id="url" name="url" placeholder="https://jouwbedrijf.nl/aanmelden" required />
 
-          <label class="consent">
-            <input type="checkbox" id="consent" name="consent" required />
-            <span>Ik heb toestemming om deze website automatisch te laten testen door een AI-agent.</span>
-          </label>
+              <label class="field-label">
+                Kies klant-persona's <span class="field-label-hint">(1 tot <span id="max-personas">4</span>)</span>
+              </label>
+              <div class="persona-grid" id="persona-grid">
+                <!-- persona cards worden hier via JS ingevuld -->
+              </div>
 
-          <button type="submit" class="btn btn-primary btn-large" id="btn-submit">
-            <span>Start de Mystery Shopper</span>
-            <span class="btn-arrow">→</span>
-          </button>
-          <p class="fineprint">
-            De agent rondt nooit een echte bestelling, betaling of accountaanmaak af — hij stopt
-            vlak voor een definitieve bevestigingsknop en registreert dat als conversiemoment.
-          </p>
-        </form>
+              <label class="field-label" for="goal">Wat proberen deze klanten te doen?</label>
+              <textarea id="goal" name="goal" rows="2" maxlength="300" placeholder="bijv. zich aanmelden voor een gratis proefperiode" required></textarea>
+
+              <label class="field-label">Hoe grondig moet de test zijn?</label>
+              <div class="depth-options" id="depth-options">
+                <button type="button" class="depth-btn" data-value="3">
+                  <span class="depth-title">Kort</span>
+                  <span class="depth-desc">Eerste indruk &amp; landingspagina</span>
+                </button>
+                <button type="button" class="depth-btn selected" data-value="5">
+                  <span class="depth-title">Normaal</span>
+                  <span class="depth-desc">Tot in het aanmeld-/bestelproces</span>
+                </button>
+                <button type="button" class="depth-btn" data-value="8">
+                  <span class="depth-title">Grondig</span>
+                  <span class="depth-desc">Zo ver mogelijk, tot vlak voor bevestigen</span>
+                </button>
+              </div>
+              <input type="hidden" id="maxSteps" name="maxSteps" value="5" />
+              <p class="field-hint">
+                De AI-klant doorloopt niet de hele website, maar volgt — net als een echte
+                bezoeker — één concreet pad naar het doel hierboven, inclusief eventuele
+                ingesloten widgets of pop-ups (bijv. een reserveringsapp).
+              </p>
+
+              <label class="consent">
+                <input type="checkbox" id="consent" name="consent" required />
+                <span>Ik heb toestemming om deze website automatisch te laten testen door een AI-agent.</span>
+              </label>
+
+              <button type="submit" class="btn btn-primary btn-large" id="btn-submit">
+                <span>Start de Mystery Shopper</span>
+                <span class="btn-arrow">→</span>
+              </button>
+              <p class="fineprint">
+                De agent rondt nooit een echte bestelling, betaling of accountaanmaak af — hij stopt
+                vlak voor een definitieve bevestigingsknop en registreert dat als conversiemoment.
+              </p>
+            </form>
+          </div>
+        </div>
       </section>
 
       <!-- LOADING -->
@@ -108,13 +163,15 @@
           <!-- ingevuld via JS: cross-persona samenvatting -->
         </div>
 
-        <div class="reco-title-row">
-          <h2 class="reco-title">Geprioriteerde aanbevelingen</h2>
-        </div>
+        <h2 class="section-title">De customer journey in één oogopslag</h2>
+        <p class="lead section-lead">Alle geteste persona's naast elkaar, stap voor stap — zo zie je meteen waar de pijn gedeeld wordt.</p>
+        <div class="journey-timeline-wrap" id="journey-timeline"></div>
+
+        <h2 class="section-title">Geprioriteerde aanbevelingen</h2>
         <div class="recommendations" id="comparison-recommendations"></div>
 
         <div class="tabs-row">
-          <h2 class="tabs-title">Per persona in detail</h2>
+          <h2 class="section-title tabs-title">Per persona in detail</h2>
           <div class="tabs" id="persona-tabs"></div>
         </div>
 

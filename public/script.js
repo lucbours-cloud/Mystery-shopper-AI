@@ -12,7 +12,7 @@
   const urlField = document.getElementById("url");
   const goalField = document.getElementById("goal");
   const stepsField = document.getElementById("maxSteps");
-  const stepsValueEl = document.getElementById("steps-value");
+  const depthOptionsEl = document.getElementById("depth-options");
   const consentField = document.getElementById("consent");
   const personaGrid = document.getElementById("persona-grid");
   const maxPersonasEl = document.getElementById("max-personas");
@@ -27,6 +27,7 @@
   const progressPersonasEl = document.getElementById("progress-personas");
 
   const comparisonHeroEl = document.getElementById("comparison-hero");
+  const journeyTimelineEl = document.getElementById("journey-timeline");
   const comparisonRecommendationsEl = document.getElementById("comparison-recommendations");
   const personaTabsEl = document.getElementById("persona-tabs");
   const personaPanelsEl = document.getElementById("persona-panels");
@@ -52,8 +53,12 @@
     return div.innerHTML;
   }
 
-  stepsField.addEventListener("input", () => {
-    stepsValueEl.textContent = stepsField.value;
+  depthOptionsEl.querySelectorAll(".depth-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      depthOptionsEl.querySelectorAll(".depth-btn").forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      stepsField.value = btn.dataset.value;
+    });
   });
 
   // ---------- Persona multi-select ----------
@@ -361,6 +366,112 @@
       </svg>`;
   }
 
+  const OUTCOME_RING_COLOR = { converted: "#2fb380", abandoned: "#e0533f" };
+
+  function truncateLabel(label, max) {
+    if (!label) return "";
+    return label.length > max ? label.slice(0, max - 1) + "…" : label;
+  }
+
+  // Het vlaggenschip-visual van het vergelijkende rapport: alle persona's naast elkaar
+  // op één gedeelde stappen-as, zodat in één oogopslag zichtbaar is of frictie zich op
+  // hetzelfde punt in de reis opstapelt (i.p.v. losse lijstjes per persona doorlezen).
+  function renderJourneyTimeline(container, personaResults) {
+    if (!personaResults.length) {
+      container.innerHTML = '<p class="emotion-chart-empty">Geen persona-resultaten om te tonen.</p>';
+      return;
+    }
+
+    const maxStepCount = Math.max(1, ...personaResults.map((r) => (r.steps ? r.steps.length : 0)));
+    const laneHeight = 58;
+    const padTop = 22;
+    const padBottom = 24;
+    const padLeft = 172;
+    const padRight = 36;
+    const width = 900;
+    const height = padTop + padBottom + personaResults.length * laneHeight;
+
+    const xFor = (stepIdx) =>
+      maxStepCount === 1
+        ? padLeft + (width - padLeft - padRight) / 2
+        : padLeft + (stepIdx / (maxStepCount - 1)) * (width - padLeft - padRight);
+
+    const parts = [];
+
+    personaResults.forEach((r, laneIdx) => {
+      const y = padTop + laneIdx * laneHeight + laneHeight / 2;
+      const hasSteps = r.steps && r.steps.length > 0;
+
+      parts.push(
+        `<text x="0" y="${(y - 6).toFixed(1)}" font-size="12" font-weight="700" fill="#201c27" font-family="Inter, sans-serif">${escapeHtml(
+          truncateLabel(r.personaLabel, 24)
+        )}</text>`
+      );
+
+      if (!hasSteps) {
+        parts.push(
+          `<text x="0" y="${(y + 11).toFixed(1)}" font-size="10" fill="#c23f2b" font-family="Inter, sans-serif">niet volledig getest</text>`
+        );
+        parts.push(
+          `<line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#e9e2d4" stroke-width="1.5" stroke-dasharray="4 4" />`
+        );
+        return;
+      }
+
+      parts.push(`<line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#e9e2d4" stroke-width="1.5" />`);
+
+      const points = r.steps.map((s, i) => ({ x: xFor(i), s }));
+      const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+      parts.push(`<path d="${linePath}" fill="none" stroke="#d3c7ef" stroke-width="2.5" />`);
+
+      points.forEach((p, i) => {
+        const color = EMOTION_COLOR[p.s.emotion] || EMOTION_COLOR.neutraal;
+        const radius = p.s.friction ? 7 : 5;
+        const isLast = i === points.length - 1;
+        const outcomeColor =
+          isLast && p.s.action === "finish_converted"
+            ? OUTCOME_RING_COLOR.converted
+            : isLast && p.s.action === "finish_abandoned"
+            ? OUTCOME_RING_COLOR.abandoned
+            : null;
+
+        if (outcomeColor) {
+          parts.push(`<circle cx="${p.x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="none" stroke="${outcomeColor}" stroke-width="2" />`);
+        }
+        parts.push(
+          `<circle cx="${p.x.toFixed(1)}" cy="${y.toFixed(1)}" r="${radius}" fill="${color}" stroke="${
+            p.s.friction ? "#e0533f" : "#ffffff"
+          }" stroke-width="${p.s.friction ? 2 : 1.5}"><title>${escapeHtml(r.personaLabel)} — stap ${p.s.stepNumber}: ${escapeHtml(
+            p.s.emotion
+          )}${p.s.friction ? " (frictie)" : ""}\n${escapeHtml(p.s.note || "")}</title></circle>`
+        );
+      });
+    });
+
+    for (let i = 0; i < maxStepCount; i++) {
+      parts.push(
+        `<text x="${xFor(i).toFixed(1)}" y="${(height - 4).toFixed(1)}" font-size="9.5" fill="#948c9e" text-anchor="middle" font-family="Inter, sans-serif">${
+          i + 1
+        }</text>`
+      );
+    }
+
+    container.innerHTML = `
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto;" role="img" aria-label="Customer journey van alle persona's naast elkaar op één tijdlijn">
+        ${parts.join("\n")}
+      </svg>
+      <div class="journey-legend">
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.enthousiast}"></span>Enthousiast</span>
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.neutraal}"></span>Neutraal</span>
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.twijfelend}"></span>Twijfelend</span>
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.gefrustreerd}"></span>Gefrustreerd</span>
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid #e0533f;"></span>Frictiepunt (grotere stip)</span>
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid ${OUTCOME_RING_COLOR.converted};"></span>Eindigt in conversie</span>
+        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid ${OUTCOME_RING_COLOR.abandoned};"></span>Eindigt in afhaken</span>
+      </div>
+    `;
+  }
+
   function renderTimeline(container, steps) {
     container.innerHTML = steps
       .map(
@@ -444,8 +555,32 @@
     `;
   }
 
-  function renderComparisonRecommendations(comparison) {
-    const recos = (comparison && comparison.prioritized_recommendations) || [];
+  function renderComparisonRecommendations(comparison, personaResults) {
+    let recos = (comparison && comparison.prioritized_recommendations) || [];
+
+    if (!recos.length) {
+      // De vergelijkende synthese leverde zelf geen lijst op (kan gebeuren) — val terug
+      // op de individuele aanbevelingen per persona zodat deze sectie nooit leeg oogt.
+      const priorityRank = { Hoog: 0, Gemiddeld: 1, Laag: 2 };
+      const combined = [];
+      (personaResults || []).forEach((r) => {
+        if (!r.finalReport || !Array.isArray(r.finalReport.recommendations)) return;
+        r.finalReport.recommendations.forEach((rec) => {
+          const key = (rec.title || "").trim().toLowerCase();
+          const existing = combined.find((c) => c._key === key);
+          if (existing) {
+            if (!existing.affected_personas.includes(r.personaLabel)) {
+              existing.affected_personas.push(r.personaLabel);
+            }
+            return;
+          }
+          combined.push({ ...rec, _key: key, affected_personas: [r.personaLabel] });
+        });
+      });
+      combined.sort((a, b) => (priorityRank[a.priority] ?? 1) - (priorityRank[b.priority] ?? 1));
+      recos = combined.slice(0, 5);
+    }
+
     if (!recos.length) {
       comparisonRecommendationsEl.innerHTML = `<p class="lead">Geen aanbevelingen beschikbaar.</p>`;
       return;
@@ -562,7 +697,8 @@
   function renderResults(result) {
     const personaResults = result.personaResults || [];
     renderComparisonHero(result);
-    renderComparisonRecommendations(result.comparison);
+    renderJourneyTimeline(journeyTimelineEl, personaResults);
+    renderComparisonRecommendations(result.comparison, personaResults);
     renderPersonaTabsAndPanels(personaResults);
   }
 
