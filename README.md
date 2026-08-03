@@ -12,9 +12,46 @@ conversiemoment, zonder de actie echt uit te voeren.
 
 ## Structuur
 
-- `server.js` — Express-server + de Playwright agent-loop + de aanroepen naar Claude
+- `lib/agent.js` — de agent-logica: Playwright-loop, de aanroepen naar Claude, rapportage
+- `server.js` — Express-server (job/polling API rond de agent)
 - `public/` — de visuele frontend (input, laadscherm, resultaten met tijdlijn)
 - `Dockerfile` — zorgt dat Chromium + alle benodigde systeem-libraries meekomen
+
+## Modelkeuze en kosten
+
+De tool gebruikt twee modellen:
+
+| Rol | Standaard | Wat het doet |
+| --- | --- | --- |
+| Brein (per stap) | `claude-opus-5` | Bekijkt de screenshot en beslist wat de klant doet |
+| Rapportage | `claude-sonnet-5` | Schrijft de eindrapporten (tekst-only, geen beelden) |
+
+Het brein is verreweg de grootste kostenpost: het krijgt per stap een screenshot
+mee, en beelden zijn duur in tokens.
+
+**Gemeten kosten** (3 persona's × 5 stappen, tegen een eenvoudige testsite):
+
+- Totaal: ongeveer **€0,57 per test** (ca. 35 tests op een saldo van €20)
+- Per persona: ongeveer **€0,19**
+
+Wil je goedkoper testen, dan zijn er drie knoppen — van meeste naar minste effect:
+
+1. **Minder persona's tegelijk.** De kosten schalen vrijwel lineair: 1 persona in
+   plaats van 3 is ongeveer een derde van de prijs.
+2. **Een kortere test.** De optie "Kort" (3 stappen) in plaats van "Normaal" (5)
+   scheelt ruwweg 40%.
+3. **Een lichter brein.** Sonnet in plaats van Opus is ongeveer 1,7× goedkoper,
+   ten koste van wat scherpte in de observaties.
+
+Je kunt de modellen wisselen zonder de code aan te raken, via environment
+variables (op Render: onder "Environment"):
+
+```
+MYSTERY_SHOPPER_STEP_MODEL=claude-sonnet-5
+MYSTERY_SHOPPER_REPORT_MODEL=claude-haiku-4-5
+```
+
+Laat je ze weg, dan gebruikt de tool de standaardwaarden uit de tabel hierboven.
 
 ## Waarom Render (en niet Netlify/Vercel)?
 

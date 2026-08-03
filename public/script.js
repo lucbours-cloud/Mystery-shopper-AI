@@ -26,6 +26,7 @@
   const progressFillEl = document.getElementById("progress-fill");
   const progressPersonasEl = document.getElementById("progress-personas");
 
+  const reportMetaEl = document.getElementById("report-meta");
   const comparisonHeroEl = document.getElementById("comparison-hero");
   const journeyTimelineEl = document.getElementById("journey-timeline");
   const comparisonRecommendationsEl = document.getElementById("comparison-recommendations");
@@ -270,6 +271,26 @@
     return "badge-priority-gemiddeld";
   }
 
+  function effortBadgeClass(effort) {
+    const n = (effort || "").toLowerCase();
+    if (n.includes("klein")) return "badge-effort-klein";
+    if (n.includes("groot")) return "badge-effort-groot";
+    return "badge-effort-middel";
+  }
+
+  // Frictie is niet langer aan/uit maar een schaal — dat maakt het rapport eerlijker
+  // (één ernstig probleem weegt zwaarder dan drie kleine ergernissen).
+  const SEVERITY_META = {
+    licht: { label: "Lichte frictie", cls: "badge-sev-licht", color: "#c9a227", radius: 6 },
+    matig: { label: "Matige frictie", cls: "badge-sev-matig", color: "#d97b28", radius: 7.5 },
+    ernstig: { label: "Ernstige frictie", cls: "badge-sev-ernstig", color: "#d63f28", radius: 9 },
+  };
+
+  function severityOf(step) {
+    const s = step.frictionSeverity || (step.friction ? "matig" : "geen");
+    return SEVERITY_META[s] ? s : "geen";
+  }
+
   function emotionBadgeClass(emotion) {
     const n = (emotion || "").toLowerCase();
     if (n.includes("enthousiast")) return "badge-emotion-enthousiast";
@@ -426,7 +447,9 @@
 
       points.forEach((p, i) => {
         const color = EMOTION_COLOR[p.s.emotion] || EMOTION_COLOR.neutraal;
-        const radius = p.s.friction ? 7 : 5;
+        const sev = severityOf(p.s);
+        const meta = SEVERITY_META[sev];
+        const radius = meta ? meta.radius : 5;
         const isLast = i === points.length - 1;
         const outcomeColor =
           isLast && p.s.action === "finish_converted"
@@ -436,14 +459,36 @@
             : null;
 
         if (outcomeColor) {
-          parts.push(`<circle cx="${p.x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="none" stroke="${outcomeColor}" stroke-width="2" />`);
+          parts.push(
+            `<circle cx="${p.x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(radius + 5).toFixed(
+              1
+            )}" fill="none" stroke="${outcomeColor}" stroke-width="2" />`
+          );
         }
+
+        // Ernstige frictie krijgt een zachte "halo" zodat je pijnpunten al ziet
+        // voordat je iets gelezen hebt.
+        if (sev === "ernstig") {
+          parts.push(
+            `<circle cx="${p.x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(radius + 4).toFixed(
+              1
+            )}" fill="${meta.color}" opacity="0.16" />`
+          );
+        }
+
+        const tooltip = [
+          `${r.personaLabel} — stap ${p.s.stepNumber}`,
+          `Gevoel: ${p.s.emotion}${meta ? ` (${meta.label.toLowerCase()})` : ""}`,
+          p.s.note || "",
+          p.s.expectationGap ? `Verwachtingskloof: ${p.s.expectationGap}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
         parts.push(
           `<circle cx="${p.x.toFixed(1)}" cy="${y.toFixed(1)}" r="${radius}" fill="${color}" stroke="${
-            p.s.friction ? "#e0533f" : "#ffffff"
-          }" stroke-width="${p.s.friction ? 2 : 1.5}"><title>${escapeHtml(r.personaLabel)} — stap ${p.s.stepNumber}: ${escapeHtml(
-            p.s.emotion
-          )}${p.s.friction ? " (frictie)" : ""}\n${escapeHtml(p.s.note || "")}</title></circle>`
+            meta ? meta.color : "#ffffff"
+          }" stroke-width="${meta ? 2 : 1.5}" class="journey-dot"><title>${escapeHtml(tooltip)}</title></circle>`
         );
       });
     });
@@ -461,22 +506,35 @@
         ${parts.join("\n")}
       </svg>
       <div class="journey-legend">
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.enthousiast}"></span>Enthousiast</span>
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.neutraal}"></span>Neutraal</span>
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.twijfelend}"></span>Twijfelend</span>
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.gefrustreerd}"></span>Gefrustreerd</span>
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid #e0533f;"></span>Frictiepunt (grotere stip)</span>
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid ${OUTCOME_RING_COLOR.converted};"></span>Eindigt in conversie</span>
-        <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid ${OUTCOME_RING_COLOR.abandoned};"></span>Eindigt in afhaken</span>
+        <span class="journey-legend-group">
+          <span class="journey-legend-title">Gevoel</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.enthousiast}"></span>Enthousiast</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.neutraal}"></span>Neutraal</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.twijfelend}"></span>Twijfelend</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot" style="background:${EMOTION_COLOR.gefrustreerd}"></span>Gefrustreerd</span>
+        </span>
+        <span class="journey-legend-group">
+          <span class="journey-legend-title">Ernst</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot journey-dot-sm" style="background:#fff; border:2px solid ${SEVERITY_META.licht.color};"></span>Licht</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot" style="background:#fff; border:2px solid ${SEVERITY_META.matig.color};"></span>Matig</span>
+          <span class="journey-legend-item"><span class="journey-legend-dot journey-dot-lg" style="background:#fff; border:2px solid ${SEVERITY_META.ernstig.color};"></span>Ernstig</span>
+        </span>
+        <span class="journey-legend-group">
+          <span class="journey-legend-title">Einde</span>
+          <span class="journey-legend-item"><span class="journey-legend-ring" style="border-color:${OUTCOME_RING_COLOR.converted};"></span>Conversie</span>
+          <span class="journey-legend-item"><span class="journey-legend-ring" style="border-color:${OUTCOME_RING_COLOR.abandoned};"></span>Afhaken</span>
+        </span>
       </div>
     `;
   }
 
   function renderTimeline(container, steps) {
     container.innerHTML = steps
-      .map(
-        (s) => `
-        <div class="step-card${s.friction ? " friction" : ""}">
+      .map((s) => {
+        const sev = severityOf(s);
+        const meta = SEVERITY_META[sev];
+        return `
+        <div class="step-card${meta ? " friction sev-" + sev : ""}">
           <div class="step-thumb">
             <img src="data:image/jpeg;base64,${s.screenshot}" alt="Screenshot stap ${s.stepNumber}" data-full="data:image/jpeg;base64,${s.screenshot}" />
           </div>
@@ -484,13 +542,21 @@
             <div class="step-head">
               <span class="step-number">STAP ${s.stepNumber}</span>
               <span class="badge ${emotionBadgeClass(s.emotion)}">${escapeHtml(s.emotion)}</span>
-              ${s.friction ? '<span class="badge badge-priority-hoog">Frictie</span>' : ""}
+              ${meta ? `<span class="badge ${meta.cls}">${meta.label}</span>` : ""}
             </div>
             <p class="step-thought">"${escapeHtml(s.thought)}"</p>
             <p class="step-note">${escapeHtml(s.note)}</p>
+            ${
+              s.expectationGap
+                ? `<div class="expectation-gap">
+                     <span class="expectation-gap-label">Verwachtingskloof</span>
+                     <span>${escapeHtml(s.expectationGap)}</span>
+                   </div>`
+                : ""
+            }
           </div>
-        </div>`
-      )
+        </div>`;
+      })
       .join("");
 
     container.querySelectorAll("img[data-full]").forEach((img) => {
@@ -530,12 +596,18 @@
       ? comparison.cross_persona_summary
       : "Er kon geen vergelijkende analyse worden gegenereerd (mogelijk faalden alle persona-tests).";
 
-    const dropoffText = comparison
-      ? comparison.common_dropoff_point
-      : "Niet beschikbaar.";
+    const dropoffText = (comparison && comparison.common_dropoff_point) || "";
+
+    // Tel alle ernstige frictiepunten over alle persona's heen — dat is het getal
+    // waar een opdrachtgever als eerste naar kijkt.
+    const seriousCount = personaResults.reduce(
+      (acc, r) => acc + (r.steps || []).filter((s) => severityOf(s) === "ernstig").length,
+      0
+    );
 
     comparisonHeroEl.innerHTML = `
       <div class="hero-label">Vergelijkend rapport — ${successful.length} van ${personaResults.length} persona's succesvol getest</div>
+      ${comparison && comparison.headline ? `<h3 class="hero-headline">${escapeHtml(comparison.headline)}</h3>` : ""}
       <p class="hero-summary">${escapeHtml(summaryText)}</p>
       <div class="hero-stats">
         <div class="hero-stat">
@@ -546,12 +618,43 @@
           <div class="hero-stat-value">${convertedCount}/${successful.length || 0}</div>
           <div class="hero-stat-label">Zouden converteren</div>
         </div>
+        <div class="hero-stat${seriousCount > 0 ? " hero-stat-alert" : ""}">
+          <div class="hero-stat-value">${seriousCount}</div>
+          <div class="hero-stat-label">Ernstige frictiepunten</div>
+        </div>
         <div class="hero-stat">
           <div class="hero-stat-value">${escapeHtml(majorityLevel(likelihoods))}</div>
           <div class="hero-stat-label">Meest voorkomende conversiekans</div>
         </div>
       </div>
-      <p class="hero-dropoff"><strong>Gedeeld afhaakpunt:</strong> ${escapeHtml(dropoffText)}</p>
+      ${
+        dropoffText
+          ? `<p class="hero-dropoff"><strong>Gedeeld afhaakpunt:</strong> ${escapeHtml(dropoffText)}</p>`
+          : ""
+      }
+    `;
+  }
+
+  function renderReportMeta(result) {
+    const url = result.url || "";
+    let host = url;
+    try {
+      host = new URL(url).host + new URL(url).pathname.replace(/\/$/, "");
+    } catch {
+      /* laat de ruwe url staan als hij niet te parsen is */
+    }
+    const now = new Date();
+    const stamp = now.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+
+    reportMetaEl.innerHTML = `
+      <div class="report-meta-main">
+        <span class="report-meta-eyebrow">Mystery shopper-rapport</span>
+        <span class="report-meta-url">${escapeHtml(host)}</span>
+      </div>
+      <div class="report-meta-side">
+        <span class="report-meta-goal">Doel: ${escapeHtml(result.goal || "—")}</span>
+        <span class="report-meta-date">${escapeHtml(stamp)}</span>
+      </div>
     `;
   }
 
@@ -591,7 +694,10 @@
         <div class="reco-card">
           <div class="reco-head">
             <h3>${escapeHtml(r.title)}</h3>
-            <span class="badge ${priorityBadgeClass(r.priority)}">${escapeHtml(r.priority)}</span>
+            <span class="reco-badges">
+              <span class="badge ${priorityBadgeClass(r.priority)}">Impact: ${escapeHtml(r.priority)}</span>
+              ${r.effort ? `<span class="badge ${effortBadgeClass(r.effort)}">Inspanning: ${escapeHtml(r.effort)}</span>` : ""}
+            </span>
           </div>
           <p>${escapeHtml(r.description)}</p>
           <div class="reco-affected">
@@ -644,6 +750,7 @@
       )}</span>
             <span class="badge badge-outcome">${escapeHtml(outcomeLabel(report.outcome))}</span>
           </div>
+          ${report.headline ? `<h3 class="verdict-headline">${escapeHtml(report.headline)}</h3>` : ""}
           <p class="verdict-summary">${escapeHtml(report.summary)}</p>
           <p class="verdict-risk"><strong>Grootste risico op afhaken:</strong> ${escapeHtml(report.biggest_dropoff_risk)}</p>
         </div>
@@ -674,7 +781,10 @@
           <div class="reco-card">
             <div class="reco-head">
               <h3>${escapeHtml(rec.title)}</h3>
-              <span class="badge ${priorityBadgeClass(rec.priority)}">${escapeHtml(rec.priority)}</span>
+              <span class="reco-badges">
+                <span class="badge ${priorityBadgeClass(rec.priority)}">Impact: ${escapeHtml(rec.priority)}</span>
+                ${rec.effort ? `<span class="badge ${effortBadgeClass(rec.effort)}">Inspanning: ${escapeHtml(rec.effort)}</span>` : ""}
+              </span>
             </div>
             <p>${escapeHtml(rec.description)}</p>
           </div>`
@@ -696,6 +806,7 @@
 
   function renderResults(result) {
     const personaResults = result.personaResults || [];
+    renderReportMeta(result);
     renderComparisonHero(result);
     renderJourneyTimeline(journeyTimelineEl, personaResults);
     renderComparisonRecommendations(result.comparison, personaResults);

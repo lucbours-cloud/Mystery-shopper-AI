@@ -704,13 +704,86 @@ textarea:focus {
   background: #eafaf2;
 }
 
+/* ---------- Report meta bar ---------- */
+.report-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-meta-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.report-meta-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.report-meta-url {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.report-meta-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.report-meta-date {
+  color: var(--text-dim);
+}
+
 /* ---------- Comparison hero ---------- */
 .comparison-hero {
   border-radius: var(--radius);
-  padding: 28px 30px;
+  padding: 30px 32px;
   background: linear-gradient(135deg, var(--surface-soft), var(--surface-soft-2));
   border: 1px solid var(--border-soft);
   margin-bottom: 10px;
+  animation: rise-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comparison-hero,
+  .persona-panel.active {
+    animation: none;
+  }
+}
+
+.hero-headline {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.45rem;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0 0 12px;
+  max-width: 34ch;
 }
 
 .hero-label {
@@ -723,12 +796,11 @@ textarea:focus {
 }
 
 .hero-summary {
-  font-size: 1.1rem;
-  margin: 0 0 16px;
-  line-height: 1.5;
-  font-family: var(--font-head);
-  font-weight: 600;
-  color: var(--ink);
+  font-size: 1rem;
+  margin: 0 0 18px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 76ch;
 }
 
 .hero-stats {
@@ -742,14 +814,30 @@ textarea:focus {
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
-  padding: 10px 16px;
+  padding: 12px 18px;
   min-width: 130px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hero-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-stat-alert {
+  border-color: #f0c0b6;
+  background: linear-gradient(180deg, #fff, #fdf0ec);
+}
+
+.hero-stat-alert .hero-stat-value {
+  color: var(--accent-red);
 }
 
 .hero-stat-value {
   font-family: var(--font-head);
   font-weight: 800;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
+  line-height: 1.1;
   color: var(--ink);
 }
 
@@ -789,10 +877,27 @@ textarea:focus {
 .journey-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  font-size: 0.78rem;
+  gap: 10px 22px;
+  font-size: 0.76rem;
   color: var(--text-dim);
-  margin: 12px 2px 0;
+  margin: 16px 2px 2px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.journey-legend-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.journey-legend-title {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.68rem;
 }
 
 .journey-legend-item {
@@ -806,6 +911,39 @@ textarea:focus {
   height: 9px;
   border-radius: 50%;
   display: inline-block;
+  box-sizing: content-box;
+}
+
+.journey-dot-sm {
+  width: 6px;
+  height: 6px;
+}
+
+.journey-dot-lg {
+  width: 12px;
+  height: 12px;
+}
+
+.journey-legend-ring {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: inline-block;
+  box-sizing: content-box;
+}
+
+.journey-dot {
+  transition: opacity 0.15s ease;
+  cursor: help;
+}
+
+.journey-timeline-wrap:hover .journey-dot {
+  opacity: 0.55;
+}
+
+.journey-timeline-wrap .journey-dot:hover {
+  opacity: 1;
 }
 
 /* ---------- Badges ---------- */
@@ -883,6 +1021,38 @@ textarea:focus {
   border-color: #f3cec7;
 }
 
+/* Frictie-ernst: een schaal in plaats van aan/uit */
+.badge-sev-licht {
+  background: #fdf7e3;
+  color: #96731a;
+  border-color: #f0e3b8;
+}
+.badge-sev-matig {
+  background: #fdeedd;
+  color: #b3621b;
+  border-color: #f4d5b5;
+}
+.badge-sev-ernstig {
+  background: #fbe7e3;
+  color: #c23f2b;
+  border-color: #f3cec7;
+}
+
+/* Inspanning: bewust neutraler dan impact, zodat impact visueel voorrang houdt */
+.badge-effort-klein,
+.badge-effort-middel,
+.badge-effort-groot {
+  background: var(--surface);
+  color: var(--text-muted);
+  border-color: var(--border);
+  font-weight: 600;
+}
+
+.badge-effort-klein {
+  color: #1b8f5a;
+  border-color: #c3ecd8;
+}
+
 .legend {
   font-size: 0.8rem;
   color: var(--text-dim);
@@ -939,6 +1109,12 @@ textarea:focus {
   margin: 0;
   font-size: 1rem;
   font-family: var(--font-head);
+}
+
+.reco-badges {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .reco-card p {
@@ -1045,9 +1221,22 @@ textarea:focus {
   margin-bottom: 12px;
 }
 
+.verdict-headline {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 10px;
+  max-width: 40ch;
+}
+
 .verdict-summary {
   margin: 0 0 12px;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
 .verdict-risk {
@@ -1102,8 +1291,46 @@ textarea:focus {
   transition: border-color 0.15s ease;
 }
 
-.step-card.friction {
-  border-left-color: var(--accent-red);
+.step-card.sev-licht {
+  border-left-color: #c9a227;
+}
+
+.step-card.sev-matig {
+  border-left-color: #d97b28;
+}
+
+.step-card.sev-ernstig {
+  border-left-color: #d63f28;
+  background: linear-gradient(180deg, #fdf3f1, var(--bg));
+}
+
+/* De verwachtingskloof is het scherpste inzicht in het rapport — die krijgt
+   bewust een eigen, opvallende behandeling in plaats van weg te vallen in de tekst. */
+.expectation-gap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--primary);
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.expectation-gap-label {
+  flex: 0 0 auto;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+  background: var(--surface-soft);
+  border-radius: 999px;
+  padding: 3px 9px;
+  margin-top: 1px;
 }
 
 .step-thumb {
@@ -1215,6 +1442,21 @@ textarea:focus {
 @media (max-width: 640px) {
   .panel, .hero-form {
     padding: 26px 20px;
+  }
+  .report-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .report-meta-side {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .hero-headline {
+    font-size: 1.2rem;
+  }
+  .expectation-gap {
+    flex-direction: column;
+    gap: 6px;
   }
   h1 {
     font-size: 2rem;
