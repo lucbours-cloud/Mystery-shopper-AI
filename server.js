@@ -8,7 +8,15 @@
 const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
-const { PERSONAS, MAX_STEPS_LIMIT, MAX_PERSONAS_PER_RUN, validateUrl, runComparison } = require("./lib/agent");
+const {
+  PERSONAS,
+  MAX_STEPS_LIMIT,
+  MAX_PERSONAS_PER_RUN,
+  STEP_MODELS,
+  DEFAULT_STEP_MODEL,
+  validateUrl,
+  runComparison,
+} = require("./lib/agent");
 
 const PORT = process.env.PORT || 10000;
 const JOB_TTL_MS = 30 * 60 * 1000; // opruimen na 30 min
@@ -41,7 +49,12 @@ function friendlyErrorFor(err) {
 }
 
 app.get("/api/personas", (req, res) => {
-  res.json({ personas: PERSONAS, maxPersonas: MAX_PERSONAS_PER_RUN });
+  res.json({
+    personas: PERSONAS,
+    maxPersonas: MAX_PERSONAS_PER_RUN,
+    stepModels: STEP_MODELS,
+    defaultStepModel: DEFAULT_STEP_MODEL,
+  });
 });
 
 app.post("/api/start-test", (req, res) => {
@@ -53,7 +66,7 @@ app.post("/api/start-test", (req, res) => {
     return;
   }
 
-  const { url, personaKeys, goal, maxSteps, consent } = req.body || {};
+  const { url, personaKeys, goal, maxSteps, consent, stepModel } = req.body || {};
 
   if (!consent) {
     res.status(400).json({ error: "Bevestig eerst dat je toestemming hebt om deze site te testen." });
@@ -78,6 +91,9 @@ app.post("/api/start-test", (req, res) => {
     return;
   }
   const steps = Math.min(Math.max(parseInt(maxSteps, 10) || 5, 3), MAX_STEPS_LIMIT);
+  // Nooit een ongevalideerde client-string als modelnaam doorgeven aan de API —
+  // alleen accepteren als het letterlijk in de toegestane lijst staat.
+  const resolvedStepModel = STEP_MODELS[stepModel] ? stepModel : DEFAULT_STEP_MODEL;
 
   const jobId = crypto.randomBytes(12).toString("hex");
   const job = {
@@ -99,11 +115,12 @@ app.post("/api/start-test", (req, res) => {
         goal: goal.trim().slice(0, 300),
         maxSteps: steps,
         apiKey,
+        stepModel: resolvedStepModel,
         onProgress: (p) => {
           job.progress = { ...job.progress, ...p };
         },
       });
-      job.result = { url: check.url, goal: goal.trim(), ...result };
+      job.result = { url: check.url, goal: goal.trim(), stepModel: resolvedStepModel, ...result };
       job.status = "done";
     } catch (err) {
       console.error("Mystery shopper comparison failed:", err && err.message, err && err.stack);

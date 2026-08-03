@@ -13,6 +13,8 @@
   const goalField = document.getElementById("goal");
   const stepsField = document.getElementById("maxSteps");
   const depthOptionsEl = document.getElementById("depth-options");
+  const modelOptionsEl = document.getElementById("model-options");
+  const stepModelField = document.getElementById("stepModel");
   const consentField = document.getElementById("consent");
   const personaGrid = document.getElementById("persona-grid");
   const maxPersonasEl = document.getElementById("max-personas");
@@ -39,6 +41,8 @@
   let personaMeta = {}; // key -> {label, description}
   let selectedKeys = new Set();
   let maxPersonas = 4;
+  let stepModelMeta = {}; // key -> {label, tagline, description, costHint}
+  let selectedStepModel = "";
   let lastPayload = null;
   let pollTimer = null;
 
@@ -70,6 +74,12 @@
       personaMeta = data.personas || {};
       maxPersonas = data.maxPersonas || 4;
       maxPersonasEl.textContent = maxPersonas;
+
+      stepModelMeta = data.stepModels || {};
+      selectedStepModel = data.defaultStepModel && stepModelMeta[data.defaultStepModel]
+        ? data.defaultStepModel
+        : Object.keys(stepModelMeta)[0] || "";
+      renderModelOptions();
 
       const entries = Object.entries(personaMeta);
       personaGrid.innerHTML = entries
@@ -103,6 +113,40 @@
     } catch (err) {
       personaGrid.innerHTML = `<p class="lead">Kon persona's niet laden. Ververs de pagina.</p>`;
     }
+  }
+
+  // ---------- Model selector (welk brein doet de per-stap observaties) ----------
+  function renderModelOptions() {
+    const entries = Object.entries(stepModelMeta);
+    if (!entries.length) {
+      modelOptionsEl.innerHTML = "";
+      return;
+    }
+
+    modelOptionsEl.innerHTML = entries
+      .map(
+        ([key, m]) => `
+        <button type="button" class="model-btn${key === selectedStepModel ? " selected" : ""}" data-value="${key}">
+          <span class="model-btn-top">
+            <span class="model-title">${escapeHtml(m.label)}</span>
+            <span class="model-cost">${escapeHtml(m.costHint || "")}</span>
+          </span>
+          <span class="model-tagline">${escapeHtml(m.tagline || "")}</span>
+          <span class="model-desc">${escapeHtml(m.description || "")}</span>
+        </button>`
+      )
+      .join("");
+
+    stepModelField.value = selectedStepModel;
+
+    modelOptionsEl.querySelectorAll(".model-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectedStepModel = btn.dataset.value;
+        stepModelField.value = selectedStepModel;
+        modelOptionsEl.querySelectorAll(".model-btn").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
   }
 
   function syncPersonaCardUI() {
@@ -139,6 +183,7 @@
       goal: goalField.value.trim(),
       maxSteps: Number(stepsField.value),
       consent: consentField.checked,
+      stepModel: stepModelField.value || selectedStepModel,
     };
     await startTest();
   });
@@ -645,6 +690,7 @@
     }
     const now = new Date();
     const stamp = now.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+    const modelLabel = (stepModelMeta[result.stepModel] || {}).label || result.stepModel || "";
 
     reportMetaEl.innerHTML = `
       <div class="report-meta-main">
@@ -653,6 +699,7 @@
       </div>
       <div class="report-meta-side">
         <span class="report-meta-goal">Doel: ${escapeHtml(result.goal || "—")}</span>
+        ${modelLabel ? `<span class="report-meta-model">Brein: ${escapeHtml(modelLabel)}</span>` : ""}
         <span class="report-meta-date">${escapeHtml(stamp)}</span>
       </div>
     `;

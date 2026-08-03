@@ -545,6 +545,75 @@ textarea:focus {
   }
 }
 
+/* ---------- Model (brein) selector ---------- */
+.model-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.model-btn {
+  font-family: var(--font);
+  text-align: left;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 13px;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.model-btn:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.model-btn-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.model-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.model-cost {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.model-tagline {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.model-desc {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.model-btn.selected {
+  border-color: var(--primary);
+  background: var(--surface-soft);
+}
+
+@media (max-width: 560px) {
+  .model-options {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Consent ---------- */
 .consent {
   display: flex;
@@ -747,6 +816,10 @@ textarea:focus {
   font-size: 0.82rem;
   color: var(--text-muted);
   text-align: right;
+}
+
+.report-meta-model {
+  color: var(--text-muted);
 }
 
 .report-meta-date {
